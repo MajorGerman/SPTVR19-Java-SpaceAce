@@ -55,15 +55,17 @@ public class SpaceAce {
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
 			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
 				glfwSetWindowShouldClose(window, true);
-                        //else if(( key == GLFW_KEY_W && action == GLFW_RELEASE && keypr != 'D')){
-                            //keypr = 'U';
-                        //} else if(( key == GLFW_KEY_A && action == GLFW_RELEASE && keypr != 'R')){
-                            //keypr = 'L';
-                        //} else if(( key == GLFW_KEY_S && action == GLFW_RELEASE && keypr != 'U')){
-                            //keypr = 'D';
-                        //} else if(( key == GLFW_KEY_D && action == GLFW_RELEASE && keypr != 'L')){
-                           //keypr = 'R';
-                        //}
+                        else if(( key == GLFW_KEY_W && action == GLFW_PRESS )){
+                            keypr = 'U';
+                        } else if(( key == GLFW_KEY_A && action == GLFW_PRESS )){
+                            keypr = 'L';
+                        } else if(( key == GLFW_KEY_S && action == GLFW_PRESS )){
+                            keypr = 'D';
+                        } else if(( key == GLFW_KEY_D && action == GLFW_PRESS )){
+                           keypr = 'R';
+                        } else{
+                            keypr = 'D';
+                        }
 		});
 
 		// Get the thread stack and push a new frame
@@ -159,7 +161,12 @@ class Game {
         
     }
     public int loop(char keypr) {
-        rocket.draw();
+        this.rocket.draw();
+        if (keypr == 'L') {
+            rocket.rotate(10);
+        } else if (keypr == 'R'){
+            rocket.rotate(-10);
+        }
         return 0;
         
         
@@ -168,26 +175,36 @@ class Game {
 class Rocket{
     int x;
     int y;
-    double vect1[] = {0,0.5};
-    double vect2[] = {0.25, -0.25};
-    double vect3[] = {-0.25, -0.25};
+    float vect1[] = {0f,0.5f};
+    float vect2[] = {0.25f, -0.25f};
+    float vect3[] = {-0.25f, -0.25f};
     
     Rocket(int x, int y){
         this.x = x;
         this.y = y;
     }
     void draw(){  
+        System.out.printf("%f %f ",(this.x  + vect1[0]),(this.y + vect1[1]));
+        System.out.printf("%f %f ",(this.x  + vect2[0]),(this.y + vect2[1]));
+        System.out.printf("%f %f%n",(this.x  + vect3[0]),(this.y + vect3[1]));
         
         glBegin(GL_TRIANGLES);           
            glColor3f(0.0f, 1.0f, 0.0f); // Red
-           glVertex2f((float)(this.x  + 0),(float)(this.y + 0.5)); 
-           glVertex2f((float)(this.x - 0.25),(float)(this.y - 0.25)); 
-           glVertex2f((float)(this.x +0.25),(float)(this.y - 0.25));          
+           glVertex2f((float)(this.x  + vect1[0]),(float)(this.y + vect1[1])); 
+           glVertex2f((float)(this.x + vect2[0]),(float)(this.y + vect2[1])); 
+           glVertex2f((float)(this.x + vect3[0]),(float)(this.y + vect3[1]));          
         glEnd();
         glFlush();       
     }
-    void rotate(double a[], double degree){
-        return;
+    void rotate(float degree){
+        System.out.println("beepboop");
+        this.vect1[0] = (float)(this.vect1[0]*Math.cos(degree)+ this.vect1[0]*-1*Math.sin(degree));
+        this.vect1[1] = (float)(this.vect1[1]*Math.sin(degree)+ this.vect1[1]* Math.cos(degree));
+        this.vect2[0] = (float)(this.vect2[0]*Math.cos(degree)+ this.vect2[0]*-1*Math.sin(degree));
+        this.vect2[1] = (float)(this.vect2[1]*Math.sin(degree)+ this.vect2[1]* Math.cos(degree));
+        this.vect3[0] = (float)(this.vect3[0]*Math.cos(degree)+ this.vect3[0]*-1*Math.sin(degree));
+        this.vect3[1] = (float)(this.vect3[1]*Math.sin(degree)+ this.vect3[1]* Math.cos(degree));
+        
     }
     void move(){
         
