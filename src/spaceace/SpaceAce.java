@@ -1,5 +1,6 @@
 package spaceace;
 
+
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -14,9 +15,27 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
+class Consts{ //коды нажатия и отпускания клавиш
+    public static final int KEY_W_PR = 101; 
+    public static final int KEY_A_PR = 102;
+    public static final int KEY_D_PR = 103;
+    public static final int KEY_UP_PR = 104;
+    public static final int KEY_LEFT_PR = 105;
+    public static final int KEY_RIGHT_PR = 106;
+    public static final int KEY_W_RL = 107; 
+    public static final int KEY_A_RL = 108;
+    public static final int KEY_D_RL = 109;
+    public static final int KEY_UP_RL = 110;
+    public static final int KEY_LEFT_RL = 111;
+    public static final int KEY_RIGHT_RL = 112;
+    public static final int NO_ONE = 0;
+}
+
 public class SpaceAce {
         String keypr = "nothing";
 	private long window;
+        int keys[] = new int[20];
+        int num = 0;
 
 	public void run() throws InterruptedException {       
                 
@@ -51,39 +70,65 @@ public class SpaceAce {
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
                 
+                
 		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
+                for (int i = num;i < keys.length;i++){
+                            keys[i] = Consts.NO_ONE;
+                        }
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
 			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
 				glfwSetWindowShouldClose(window, true);
-                        else if(( key == GLFW_KEY_W && action == GLFW_PRESS )){
-                            keypr = "1uppress";
-                        } else if(( key == GLFW_KEY_A && action == GLFW_PRESS )){
-                            keypr = "1leftpress";
-                        } else if(( key == GLFW_KEY_D && action == GLFW_PRESS )){
-                           keypr = "1rightpress";
-                        } else if(( key == GLFW_KEY_W && action == GLFW_RELEASE )){
-                            keypr = "1uprelease";
+                        
+                        if(( key == GLFW_KEY_W && action == GLFW_PRESS )){
+                            keys[num] = Consts.KEY_W_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_W && action == GLFW_RELEASE )){
+                            keys[num] = Consts.KEY_W_RL;
+                            num++;
+                        } 
+                        
+                        if(( key == GLFW_KEY_A && action == GLFW_PRESS )){
+                            keys[num] = Consts.KEY_A_PR;
+                            num++;
                         } else if (( key == GLFW_KEY_A && action == GLFW_RELEASE )) {
-                            keypr = "1leftrelease";
+                            keys[num] = Consts.KEY_A_RL;
+                            num++;
+                        } 
+                        
+                        if(( key == GLFW_KEY_D && action == GLFW_PRESS )){
+                           keys[num] = Consts.KEY_D_PR;
+                            num++;
                         } else if (( key == GLFW_KEY_D && action == GLFW_RELEASE )) {
-                            keypr = "1rightrelease";
-                            
-                        } else if(( key == GLFW_KEY_UP && action == GLFW_PRESS )){
-                            keypr = "2uppress";
-                        } else if(( key == GLFW_KEY_LEFT && action == GLFW_PRESS )){
-                            keypr = "2leftpress";
-                        } else if(( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )){
-                           keypr = "2rightpress";
+                            keys[num] = Consts.KEY_D_RL;
+                            num++;   
+                        } 
+                        
+                        if(( key == GLFW_KEY_UP && action == GLFW_PRESS )){
+                            keys[num] = Consts.KEY_UP_PR;
+                            num++;
                         } else if(( key == GLFW_KEY_UP && action == GLFW_RELEASE )){
-                            keypr = "2uprelease";
-                        } else if (( key == GLFW_KEY_LEFT && action == GLFW_RELEASE )) {
-                            keypr = "2leftrelease";
-                        } else if (( key == GLFW_KEY_RIGHT && action == GLFW_RELEASE )) {
-                            keypr = "2rightrelease"; 
-                            
-                        } else {
-                            keypr = "LOL";
+                            keys[num] = Consts.KEY_UP_RL;
+                            num++;
                         }
+                        
+                        if(( key == GLFW_KEY_LEFT && action == GLFW_PRESS )){
+                            keys[num] = Consts.KEY_LEFT_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_LEFT && action == GLFW_RELEASE )) {
+                            keys[num] = Consts.KEY_LEFT_RL;
+                            num++;
+                        }
+                        
+                        if(( key == GLFW_KEY_RIGHT && action == GLFW_PRESS )){
+                           keys[num] = Consts.KEY_RIGHT_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_RIGHT && action == GLFW_RELEASE )) {
+                            keys[num] = Consts.KEY_RIGHT_RL;
+                            num++; 
+                        }
+                        
+                        //делаем так, чтобы массив заполнялся с нуля в следующей итерации
+                        num = 0;
 		});
 
 		// Get the thread stack and push a new frame
@@ -114,25 +159,21 @@ public class SpaceAce {
 	}
 
 	private void loop() throws InterruptedException {
-		// This line is critical for LWJGL's interoperation with GLFW's
-		// OpenGL context, or any context that is managed externally.
-		// LWJGL detects the context that is current in the current thread,
-		// creates the GLCapabilities instance and makes the OpenGL
-		// bindings available for use.
 		GL.createCapabilities();
-
-		// Set the clear color
                 Game game = new Game();
                 
                 Thread.sleep(500);
-		// Run the rendering loop until the user has attempted to close
-		// the window or has pressed the ESCAPE key.
+                
 		while ( !glfwWindowShouldClose(window) ) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                        if (game.loop(keypr) == 1){
+                        if (game.loop(keys) == 1){
                             glfwSetWindowShouldClose(window, true);
                         };
+                        //Очищаем массив от зажатых клавиш
+                        for (int i = num;i < keys.length;i++){
+                            keys[i] = Consts.NO_ONE;
+                        }
       
 			glfwSwapBuffers(window); // swap the color buffers
                         
@@ -140,7 +181,7 @@ public class SpaceAce {
 			// invoked during this call.
 			glfwPollEvents();
                         glClear(GL_COLOR_BUFFER_BIT); 
-                        Thread.sleep(20);
+                        Thread.sleep(30);
                         
 		}
                 
@@ -149,27 +190,6 @@ public class SpaceAce {
 	public static void main(String[] args) throws InterruptedException {
 		new SpaceAce().run();              
 	}
-        
-        public void render() {
-            //
-        }
-        
-        void display(float red,float green,float blue) {
-           glClear(GL_COLOR_BUFFER_BIT);         // Clear the color buffer (background)
-
-           // Draw a Red 1x1 Square centered at origin
-           //glBegin(GL_QUADS);              // Each set of 4 vertices form a quad
-              //glColor3f(red, green, blue); // Red
-              //glVertex2f(-0.5f, -0.5f);    // x, y
-              //glVertex2f( 0.5f, -0.5f);
-              //glVertex2f( 0.5f,  0.5f);
-              //glVertex2f(-0.5f,  0.5f);
-           //glEnd();
-
-           //glFlush();  // Render now
-        }
-
-
 }
 
 class Game {
@@ -207,10 +227,10 @@ class Game {
     boolean collide(Rocket a,Rocket b) {
         float firsthitbox[] = a.getHitBox();
         float secondhitbox[] = b.getHitBox();
-        return firsthitbox[0] < secondhitbox[0] + secondhitbox[2] &&
+        return (firsthitbox[0] < secondhitbox[0] + secondhitbox[2] &&
                 firsthitbox[0] + firsthitbox[2] > secondhitbox[0] &&
                 firsthitbox[1] < secondhitbox[1] + secondhitbox[3] &&
-                firsthitbox[1] + firsthitbox[3] > secondhitbox [1];
+                firsthitbox[1] + firsthitbox[3] > secondhitbox [1]);
     }
     
     void draw() {
@@ -222,39 +242,45 @@ class Game {
             glFlush(); 
         }
     }
-    public int loop(String keypr) {
+    public int loop(int[] keypr) {
         
         draw();
         this.rocket.draw(0,1,0);
         this.rocket2.draw(1,0,0);
         
-        if (keypr.equals("1leftpress")) {
+        if (isValueInArray(keypr,Consts.KEY_A_PR)) {
             oleftpress = true;
-        } else if (keypr.equals("1rightpress")){
-            orightpress = true;
-        } else if (keypr.equals("1leftrelease")) {
+        } else  if (isValueInArray(keypr,Consts.KEY_A_RL)) {
             oleftpress = false;
-        } else if (keypr.equals("1rightrelease")) {
+        }
+        if (isValueInArray(keypr,Consts.KEY_D_PR)) {
+            orightpress = true;
+        }else if (isValueInArray(keypr,Consts.KEY_D_RL)){
             orightpress = false;
         }
-        if (keypr.equals("1uppress")) {
+            
+        if (isValueInArray(keypr,Consts.KEY_W_PR)) {
             ouppress = true;
-        } else if (keypr.equals("1uprelease")) {
+        } else if (isValueInArray(keypr,Consts.KEY_W_RL)) {
             ouppress = false;
         }
 
-        if (keypr.equals("2leftpress")) {
+        if (isValueInArray(keypr,Consts.KEY_LEFT_PR)) {
             sleftpress = true;
-        } else if (keypr.equals("2rightpress")){
-            srightpress = true;
-        } else if (keypr.equals("2leftrelease")) {
+        } else if (isValueInArray(keypr,Consts.KEY_LEFT_RL)) {
             sleftpress = false;
-        } else if (keypr.equals("2rightrelease")) {
+        } 
+        
+        if (isValueInArray(keypr,Consts.KEY_RIGHT_PR)){
+            srightpress = true;
+        } else if (isValueInArray(keypr,Consts.KEY_RIGHT_RL)) {
             srightpress = false;
         }
-        if (keypr.equals("2uppress")) {
+            
+            
+        if (isValueInArray(keypr,Consts.KEY_UP_PR)) {
             suppress = true;
-        } else if (keypr.equals("2uprelease")) {
+        } else if (isValueInArray(keypr,Consts.KEY_UP_RL)) {
             suppress = false;
         }
         
@@ -280,35 +306,45 @@ class Game {
          if (suppress) {
             rocket2.changespeed();
         }
+        if (this.collide(rocket,rocket2)){
+            System.out.println("gotcha");
+            return 1;
+        }
          
         return 0;
         
         
     }
+    private boolean isValueInArray(int[] array, int value){
+        for (int i = 0; i< array.length;i++) {
+            if (array[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 class Rocket{
-    float dx = 0;
-    float dy = 0;
-    float realdx = 0;
-    float realdy = 0;
+    float ds[] = {0f,0f};
+    float realds[] = {0f,0f};
     
-    float hitbox[] = {-0.3f, -0.3f, 0.6f, 0.6f};
+    float hitbox[] = {-0.03f, -0.03f, 0.06f, 0.06f};
+    float hitboxstart[] = {-0.03f, -0.03f};
     
-    float x;
-    float y;
+    float coord[] = new float[2];
     
     float vect1[] = {0f,0.06f};
     float vect2[] = {0.03f, -0.03f};
     float vect3[] = {-0.03f, -0.03f};
     
     Rocket(float x, float y){
-        this.x = x;
-        this.y = y;
+        this.coord[0] = x;
+        this.coord[1] = y;
     }
     
     float[] getHitBox() {  
-        this.hitbox[0] = this.hitbox[0] + this.x;
-        this.hitbox[1] = this.hitbox[1] + this.y;
+        this.hitbox[0] = this.hitboxstart[0] + this.coord[0];
+        this.hitbox[1] = this.hitboxstart[1] + this.coord[1];
         return this.hitbox;
     }
     
@@ -321,9 +357,9 @@ class Rocket{
              
         glBegin(GL_TRIANGLES);           
            glColor3f(r, g, b); // Red
-           glVertex2f((float)(this.x  + vect1[0]),(float)(this.y + vect1[1])); 
-           glVertex2f((float)(this.x + vect2[0]),(float)(this.y + vect2[1])); 
-           glVertex2f((float)(this.x + vect3[0]),(float)(this.y + vect3[1]));          
+           glVertex2f((float)(this.coord[0]  + vect1[0]),(float)(this.coord[1] + vect1[1])); 
+           glVertex2f((float)(this.coord[0] + vect2[0]),(float)(this.coord[1] + vect2[1])); 
+           glVertex2f((float)(this.coord[0] + vect3[0]),(float)(this.coord[1] + vect3[1]));          
         glEnd();
         glFlush();       
     }
@@ -344,29 +380,25 @@ class Rocket{
         this.vect3[1] = b;       
     }
     void move(){ 
-        //this.dx = this.dx - 0.01f;
-        //this.dy = this.dy - 0.01f;
-        this.x = this.x + this.dx;
-        this.y = this.y + this.dy;
+        this.coord[0] += this.ds[0];
+        this.coord[1] += this.ds[1];
         
-        if (this.x > 1.01){
-            this.x = -1.01f;
-        } else if (this.x < -1.01){
-            this.x = 1.01f;
+        if (this.coord[0] > 1.01){
+            this.coord[0] = -1.01f;
+        } else if (this.coord[0] < -1.01){
+            this.coord[0] = 1.01f;
         }
-        if (this.y > 1.01){
-            this.y = -1.01f;
-        } else if (this.y < -1.01){
-            this.y = 1.01f;
+        if (this.coord[1] > 1.01){
+            this.coord[1] = -1.01f;
+        } else if (this.coord[1] < -1.01){
+            this.coord[1] = 1.01f;
         }
     }
     void changespeed() {
-        this.realdx = this.realdx + this.vect1[0]/12;
-        System.out.println(this.realdx);
-        this.realdy = this.realdy + this.vect1[1]/12;
-        this.dx = (float)(Math.atan(realdx)/10);
-        System.out.println(this.dx);       
-        this.dy = (float)(Math.atan(realdy)/10);
+        this.realds[0] += this.vect1[0]/12;
+        this.realds[1] += this.vect1[1]/12;
+        this.ds[0] = (float)(Math.atan(realds[0])/10);       
+        this.ds[1] = (float)(Math.atan(realds[1])/10);
         
     }
     
