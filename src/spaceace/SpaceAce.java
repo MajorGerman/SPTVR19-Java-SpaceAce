@@ -1,6 +1,7 @@
 package spaceace;
 
 
+import java.awt.Font;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -22,12 +23,18 @@ class Consts{ //коды нажатия и отпускания клавиш
     public static final int KEY_UP_PR = 104;
     public static final int KEY_LEFT_PR = 105;
     public static final int KEY_RIGHT_PR = 106;
-    public static final int KEY_W_RL = 107; 
-    public static final int KEY_A_RL = 108;
-    public static final int KEY_D_RL = 109;
-    public static final int KEY_UP_RL = 110;
-    public static final int KEY_LEFT_RL = 111;
-    public static final int KEY_RIGHT_RL = 112;
+    public static final int KEY_V_PR = 107;
+    public static final int KEY_CTRL_PR = 108;
+    public static final int KEY_SPACE_PR = 109;
+    public static final int KEY_W_RL = 201; 
+    public static final int KEY_A_RL = 202;
+    public static final int KEY_D_RL = 203;
+    public static final int KEY_UP_RL = 204;
+    public static final int KEY_LEFT_RL = 205;
+    public static final int KEY_RIGHT_RL = 206;
+    public static final int KEY_V_RL = 207;
+    public static final int KEY_CTRL_RL = 208;
+    public static final int KEY_SPACE_RL = 209;
     public static final int NO_ONE = 0;
 }
 
@@ -36,6 +43,8 @@ public class SpaceAce {
 	private long window;
         int keys[] = new int[20];
         int num = 0;
+        int display = 1;
+        int[] mouse = new int[2];
 
 	public void run() throws InterruptedException {       
                 
@@ -127,6 +136,29 @@ public class SpaceAce {
                             num++; 
                         }
                         
+                         if(( key == GLFW_KEY_V && action == GLFW_PRESS )){
+                           keys[num] = Consts.KEY_V_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_V && action == GLFW_RELEASE )) {
+                            keys[num] = Consts.KEY_V_RL;
+                            num++; 
+                        }      
+                         
+                         if(( key == GLFW_KEY_RIGHT_CONTROL&& action == GLFW_PRESS )){
+                           keys[num] = Consts.KEY_CTRL_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_RIGHT_CONTROL && action == GLFW_RELEASE )) {
+                            keys[num] = Consts.KEY_CTRL_RL;
+                            num++; 
+                        }  
+                         
+                         if(( key == GLFW_KEY_SPACE && action == GLFW_PRESS )){
+                           keys[num] = Consts.KEY_SPACE_PR;
+                            num++;
+                        } else if (( key == GLFW_KEY_SPACE && action == GLFW_RELEASE )) {
+                            keys[num] = Consts.KEY_SPACE_RL;
+                            num++; 
+                        } 
                         //делаем так, чтобы массив заполнялся с нуля в следующей итерации
                         num = 0;
 		});
@@ -160,16 +192,43 @@ public class SpaceAce {
 
 	private void loop() throws InterruptedException {
 		GL.createCapabilities();
-                Game game = new Game();
-                
+                Menu menu = new Menu();
+                Game game = new Game();           
                 Thread.sleep(500);
                 
 		while ( !glfwWindowShouldClose(window) ) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
                         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-                        if (game.loop(keys) == 1){
-                            glfwSetWindowShouldClose(window, true);
-                        };
+                        if (display == 2) {
+                            int exitCode = game.loop(keys);
+                            switch (exitCode) {
+                                case 1:
+                                    display = 1;
+                                    System.out.println("Draw");
+                                    break;
+                                case 2:
+                                    display = 1;
+                                    System.out.println("Red win");
+                                    break;
+                                case 3:
+                                    display = 1;
+                                    System.out.println("Green win");
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else if (display == 1) {
+                            int exitCode = menu.loop(keys);
+                            switch (exitCode) {
+                                case 1:
+                                    display = 2;
+                                    game = new Game(); 
+                                    System.out.println("Game started");
+                                    break;
+                                default:
+                                    break;
+                            }                            
+                        }
                         //Очищаем массив от зажатых клавиш
                         for (int i = num;i < keys.length;i++){
                             keys[i] = Consts.NO_ONE;
@@ -192,6 +251,50 @@ public class SpaceAce {
 	}
 }
 
+class Menu {
+
+    Menu() {
+        
+    }
+    
+    int loop(int[] keypr) {
+        triangle();
+        if (isValueInArray(keypr,Consts.KEY_SPACE_PR)) {
+            return 1;
+        }
+        return 0;
+    }
+    
+    void triangle() {
+        float vect1[] = {0.3f, 0f};
+        float vect2[] = {-0.15f, 0.26f};
+        float vect3[] = {-0.15f, -0.26f};
+        
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        
+        glPushMatrix();
+             
+        glBegin(GL_TRIANGLES);           
+           glColor3f(0, 1, 0); // Red
+           glVertex2f((float)(vect1[0]),(float)(vect1[1])); 
+           glVertex2f((float)(vect2[0]),(float)(vect2[1])); 
+           glVertex2f((float)(vect3[0]),(float)(vect3[1]));           
+        glEnd();
+        glFlush(); 
+    }
+    
+    private boolean isValueInArray(int[] array, int value){
+        for (int i = 0; i< array.length;i++) {
+            if (array[i] == value) {
+                return true;
+            }
+        }
+        return false;
+    } 
+}
+
+
 class Game {
     float stars[][] = new float[2][];
     private final Random rand = new Random();
@@ -206,6 +309,8 @@ class Game {
     
     Rocket rocket = new Rocket(-0.5f,0);
     Rocket rocket2 = new Rocket(0.5f,0);
+    
+    Bullet bullets[] = new Bullet[100];
     
     Game() {
         float a[] = new float[100];
@@ -233,6 +338,22 @@ class Game {
                 firsthitbox[1] + firsthitbox[3] > secondhitbox [1]);
     }
     
+    boolean collide_bullets(Rocket a, Bullet[] b) {
+        for (int i = 0; i < b.length; i++) {
+            if (b[i] != null) {
+                float firsthitbox[] = a.getHitBox();
+                float secondhitbox[] = b[i].getHitBox();
+                if ((firsthitbox[0] < secondhitbox[0] + secondhitbox[2] &&
+                        firsthitbox[0] + firsthitbox[2] > secondhitbox[0] &&
+                        firsthitbox[1] < secondhitbox[1] + secondhitbox[3] &&
+                        firsthitbox[1] + firsthitbox[3] > secondhitbox [1])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     void draw() {
         for (int i = 0; i < this.stars[0].length; i++) {
             glBegin(GL_POINTS);
@@ -244,9 +365,33 @@ class Game {
     }
     public int loop(int[] keypr) {
         
+        for (int i = 0; i < bullets.length; i++) {
+            if (bullets[i] != null) {
+                bullets[i].draw(1,0,1);
+            }
+        }
+        
         draw();
         this.rocket.draw(0,1,0);
         this.rocket2.draw(1,0,0);
+        
+        if (isValueInArray(keypr,Consts.KEY_V_PR)) {           
+            for (int i = 0; i < bullets.length; i++) {
+                if (bullets[i] == null) {
+                    bullets[i] = rocket.createBullet();
+                    break;
+                }
+            }         
+        }
+        
+        if (isValueInArray(keypr,Consts.KEY_CTRL_PR)) {           
+            for (int i = 0; i < bullets.length; i++) {
+                if (bullets[i] == null) {
+                    bullets[i] = rocket2.createBullet();
+                    break;
+                }
+            }         
+        }
         
         if (isValueInArray(keypr,Consts.KEY_A_PR)) {
             oleftpress = true;
@@ -296,6 +441,15 @@ class Game {
             rocket2.rotate((float)(Math.toRadians(-10)));
         }
         
+        
+        for (int i = 0; i < bullets.length; i++) {
+                if (bullets[i] != null) {
+                    if (bullets[i].move()) {
+                        bullets[i] = null;
+                    }                    
+                }
+            } 
+        
         rocket.move();
         rocket2.move();
         
@@ -307,9 +461,19 @@ class Game {
             rocket2.changespeed();
         }
         if (this.collide(rocket,rocket2)){
-            System.out.println("gotcha");
+
             return 1;
         }
+        
+        if (this.collide_bullets(rocket,bullets)){
+
+            return 2;
+        }       
+        
+        if (this.collide_bullets(rocket2,bullets)){
+            return 3;
+        }
+
          
         return 0;
         
@@ -397,9 +561,62 @@ class Rocket{
     void changespeed() {
         this.realds[0] += this.vect1[0]/12;
         this.realds[1] += this.vect1[1]/12;
-        this.ds[0] = (float)(Math.atan(realds[0])/10);       
-        this.ds[1] = (float)(Math.atan(realds[1])/10);
+        this.ds[0] = (float)(Math.atan(realds[0])/25);       
+        this.ds[1] = (float)(Math.atan(realds[1])/25);
         
     }
+    public Bullet createBullet() {
+        float a[] = new float[2];
+        a[0] = this.coord[0] + this.vect1[0];
+        a[1] = this.coord[1] + this.vect1[1];
+        float speed[] = vect1;
+        Bullet bul = new Bullet(speed,a,this.ds);
+        return bul;
+    }
     
+}
+
+class Bullet {
+    float speed[] = new float[2];
+    float vect[] = {0.005f, 0.005f};
+    float hitbox[] = {-0.005f, 0.005f, 0.01f, 0.01f};
+    float hitboxstart[] = {-0.005f, -0.005f};
+    float coords[] = new float[2];
+    Bullet(float[] a, float[] coords, float[] speed) {
+        this.speed = a.clone();
+        this.speed[0] = this.speed[0] + speed[0];
+        this.speed[1] = this.speed[1] + speed[1];
+        this.coords = coords.clone();
+        this.coords[0]+=speed[0]*0.3f;
+        this.coords[1]+=speed[0]*0.3f;
+    }
+    public boolean move() {
+        coords[0] = coords[0] + speed[0]*0.6f;
+        coords[1] = coords[1] + speed[1]*0.6f;
+        if (coords[0] < -1 || coords[0] > 1 || coords[1] < -1 || coords[1] > 1) {
+            return true;
+        }
+        return false;
+    }
+    float[] getHitBox() {  
+        this.hitbox[0] = this.hitboxstart[0] + this.coords[0];
+        this.hitbox[1] = this.hitboxstart[1] + this.coords[1];
+        return this.hitbox;
+    }
+    public void draw(float r, float g, float b) {
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        
+        glPushMatrix();
+             
+        glBegin(GL_QUADS);           
+           glColor3f(r, g, b); // Red
+           glVertex2f((float)(this.coords[0]  + vect[0]),(float)(this.coords[1] + vect[1])); 
+           glVertex2f((float)(this.coords[0] + vect[0]),(float)(this.coords[1] - vect[1])); 
+           glVertex2f((float)(this.coords[0] - vect[0]),(float)(this.coords[1] - vect[1]));          
+           glVertex2f((float)(this.coords[0] - vect[0]),(float)(this.coords[1] + vect[1])); 
+        glEnd();
+        glFlush();            
+    }
+
 }
